@@ -37,10 +37,10 @@
 #define MODE2 11
 
 // ----- Polar finder light -----
-#define ENABLE_POLAR_LIGHT true
+#define ENABLE_POLAR_LIGHT false
 #define POT_ANALOG_PIN 0
 #define POLAR_LIGHT_LED 10
 
 // ----- Customizable pins -----
 // List of pins that can be modified by the serial port
-#define CUSTOMIZABLE_PINS {5, 6, 9}
+#define CUSTOMIZABLE_PINS {}
