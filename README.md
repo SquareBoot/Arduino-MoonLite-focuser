@@ -38,9 +38,11 @@ or remove the Newton mirror cooler MOSFET.
 <img align="center" src="Docs/SCH.png"><br>
 
 <img align="right" src="Brackets/Sky-Watcher Newton Crayford/3.jpg" width="250" >
+
 ### Mounting brackets
 I included the mounting brackets I made for the common SkyWatcher 
 dual-speed Crayford focuser (I have a 200mm f/5 Newton OTA).
+
 **AutoCAD 2019** project, STL and IGS exported files.
 
 ### Forking & issues
