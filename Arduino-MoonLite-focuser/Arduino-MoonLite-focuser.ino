@@ -1,6 +1,9 @@
 /*
   Moonlite-compatible focuser controller
 
+  ** Version 2.3 **
+    Hand control support
+
   ** Version 2.2 **
     Bugs fixed, general changes.
 
@@ -16,8 +19,8 @@
     Added sleep function by Daniel Franzén
 */
 
-// Firmware version - 2.2
-const String VERSION = "22";
+// Firmware version - 2.3
+const String VERSION = "23";
 
 // Configuration
 #include "Config.h"
@@ -27,6 +30,11 @@ const String VERSION = "22";
 #include <avr/io.h>                                       // AVR library
 #include <avr/wdt.h>                                      // Watchdog timer
 #define reboot() wdt_enable(WDTO_30MS); while(1) {}       // To reset the board, call reboot();
+#endif
+
+#if ENABLE_HC == true
+#include <ButtonDebounce.h>
+#include <SevenSeg.h>
 #endif
 
 // Stepper driver libraries
@@ -123,6 +131,60 @@ int customPins[] = CUSTOMIZABLE_PINS;
 boolean ledState = false;
 long blinkStartTime = 0;
 
+#if ENABLE_HC == true
+#define BUTTONS_DEBOUNCE 60
+ButtonDebounce buttonUp(BUTTON_UP, BUTTONS_DEBOUNCE);
+ButtonDebounce buttonDown(BUTTON_DOWN, BUTTONS_DEBOUNCE);
+ButtonDebounce buttonMode(BUTTON_MODE, BUTTONS_DEBOUNCE);
+int hcSpeed = 1;
+boolean hcMode = true;
+SevenSeg hcDisp(SEVEN_SEGMENT_DISP);
+long lastScreenBlink = 0;
+boolean screenBlinkState = true;
+
+void buttonModeChanged(int state) {
+  if (state == 1) {
+    if (hcMode) {
+      hcDisp.writeDigit(hcSpeed);
+      hcMode = false;
+
+    } else {
+      hcMode = true;
+    }
+  }
+}
+
+void buttonUpChanged(int state) {
+  if (state == 1) {
+    if (hcMode) {
+      if (hcSpeed < 6) {
+        hcSpeed++;
+        hcDisp.writeDigit(hcSpeed);
+      }
+
+    } else {
+      //TODO: should we tell INDI that the position is changed by the HC?
+      stepper.move(hcSpeedToSteps());
+    }
+  }
+}
+
+void buttonDownChanged(int state) {
+  if (state == 1) {
+    if (hcMode) {
+      if (hcSpeed > 1) {
+        hcSpeed--;
+        hcDisp.writeDigit(hcSpeed);
+      }
+
+    } else {
+      //TODO: should we tell INDI that the position is changed by the HC?
+      stepper.move(-hcSpeedToSteps());
+    }
+  }
+}
+#endif
+
 void setup() {
   // Serial connection
   Serial.begin(SERIAL_SPEED);
@@ -135,6 +197,15 @@ void setup() {
   // Polar finder light
 #if ENABLE_POLAR_LIGHT == true
   pinMode(POLAR_LIGHT_LED, OUTPUT);
+#endif
+
+#if ENABLE_HC == true
+  hcDisp.setCommonCathode();
+  hcDisp.changeDigit(0);
+  hcDisp.writeDigit(hcSpeed);
+  buttonMode.setCallback(buttonModeChanged);
+  buttonUp.setCallback(buttonUpChanged);
+  buttonDown.setCallback(buttonDownChanged);
 #endif
 
   // ----- Motor driver -----
@@ -186,6 +257,24 @@ void loop() {
 
   } else {
     analogWrite(POLAR_LIGHT_LED, 0);
+  }
+#endif
+
+#if ENABLE_HC == true
+  buttonMode.update();
+  buttonUp.update();
+  buttonDown.update();
+  if (hcMode == false) {
+    if (millis() - lastScreenBlink > 300) {
+      lastScreenBlink = millis();
+      screenBlinkState = !screenBlinkState;
+      if (screenBlinkState) {
+        hcDisp.clearDisp();
+
+      } else {
+        hcDisp.writeDigit(hcSpeed);
+      }
+    }
   }
 #endif
 
@@ -374,6 +463,23 @@ void loop() {
       stepper.setCurrentPosition(hexToLong(param));
     }
   }
+}
+
+int hcSpeedToSteps() {
+  switch (hcSpeed) {
+  case 1:
+    return 1;
+  case 2:
+    return 5;
+  case 3:
+    return 10;
+  case 4:
+    return 50;
+  case 5:
+    return 100;
+  case 6:
+    return 500;
+}
 }
 
 long hexToLong(char *line) {

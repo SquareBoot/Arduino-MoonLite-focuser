@@ -24,17 +24,17 @@
 // #define MOTOR_PPS (MOTOR_RPM * STEPS_REV / 60)
 // ----- Driver pins -----
 // Driver DIR pin
-#define DRIVER_DIR 2
+#define DRIVER_DIR 18
 // Driver STEP pin
-#define DRIVER_STEP 3
+#define DRIVER_STEP 17
 // Driver ENABLE pin. Comment to disable functionality
 //#define DRIVER_EN 4
 // M0. Only for microstepping-enabled drivers
-#define MODE0 7
+#define MODE0 14
 // M1. Only for microstepping-enabled drivers
-#define MODE1 8
+#define MODE1 15
 // M2. Only for microstepping-enabled drivers
-#define MODE2 11
+#define MODE2 16
 
 // ----- Polar finder light -----
 #define ENABLE_POLAR_LIGHT false
@@ -44,3 +44,10 @@
 // ----- Customizable pins -----
 // List of pins that can be modified by the serial port
 #define CUSTOMIZABLE_PINS {}
+
+// ----- Hand controller -----
+#define ENABLE_HC true
+#define SEVEN_SEGMENT_DISP 6, 5, 4, 3, 2, 8, 7
+#define BUTTON_UP 10
+#define BUTTON_DOWN 11
+#define BUTTON_MODE 12
