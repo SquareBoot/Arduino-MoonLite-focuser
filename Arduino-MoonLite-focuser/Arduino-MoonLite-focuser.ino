@@ -243,6 +243,13 @@ void loop() {
     idx = 0;
 
     // Execute the command
+    // The stand-alone program sends :C# :GB# on startup
+    // :C# is a temperature conversion, doesn't require any response
+
+    // LED backlight value, always return "00"
+    if (!strcasecmp(cmd, "GB")) {
+      Serial.print("00#");
+    }
 
     if (!strcasecmp(cmd, "RS")) {
 #if ENABLE_SW_RS == true
